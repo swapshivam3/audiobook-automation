@@ -1,1 +1,13 @@
 .env
+env/
+/env/
+/env
+__pycache__/
+*.pyc
+*.pyo
+*.pyd
+notes
+media/
+client_secrets.json
+token.pickle
+service.json
