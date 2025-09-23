@@ -77,19 +77,21 @@ def trim_long_silences(input_file, silence_threshold=-50, min_silence_len=1900, 
     trimmed_audio = AudioSegment.empty()
     last_end = 0
     total_trimmed = 0
-    fade_duration = 100  # ms for fade in/out
-    fade_per_cut = 40
+    fade_duration = 300  # ms for fade in/out
+    fade_per_cut = 100
     
     for start, end in silent_ranges:
         silence_dur = end - start
         # Keep silence only if it's short, otherwise replace it with `keep_silence` ms silence
         segment = audio[last_end:start]
-        if len(segment) > fade_per_cut:
+        if len(segment) > 2*fade_per_cut:
         # Apply a tiny fade-out at the cut point
-            segment = segment.fade_out(fade_per_cut)
-
+            segment = segment.fade_in(fade_per_cut).fade_out(fade_per_cut)
+        elif len(segment) > fade_per_cut:
+            segment = segment.fade_in(fade_per_cut)
+            
         trimmed_audio += segment
-        adaptive_keep = max(300, min(1100, int(silence_dur * 0.25)))
+        adaptive_keep = max(450, min(1250, int(silence_dur * 0.34)))
         trimmed_audio += AudioSegment.silent(duration=adaptive_keep)
         total_trimmed += (end - start - keep_silence)
         last_end = end
