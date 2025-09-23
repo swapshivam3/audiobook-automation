@@ -62,7 +62,7 @@ def start(videoname):
 
     # Wait for all jobs to finish or 10 minutes timeout
     
-    timeout = time.time() + 60*10  # 10 minutes from now
+    timeout = time.time() + 60*20  # 10 minutes from now
     while time.time() < timeout:
         all_finished = all([job.is_finished for job in job_list])
         if all_finished:

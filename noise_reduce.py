@@ -28,15 +28,16 @@ def get_chunks(file_path):
 
 def transform_audio(file_path, batch_id): 
     model, df_state = get_model()
+    file_path_og = file_path
+    log_publish(f"[noise_reduce] START file={file_path_og}")
     file_path = os.path.join(LOCAL_SANITIZED_PATH, file_path)
     chunk_list = get_chunks(file_path)
     noise_reduced_chunk_list = []
     for chunk in chunk_list:
-        log_publish(f"[noise_reduce] START chunk={chunk}")
         audio, _ = load_audio(chunk, sr=df_state.sr())
         noise_reduced = chunk.replace(LOCAL_CHUNKED_PATH, LOCAL_NOISE_REDUCED_PATH)
         enhanced = enhance(model, df_state, audio)
         save_audio(noise_reduced, enhanced, df_state.sr())
         noise_reduced_chunk_list.append(noise_reduced)
-        log_publish(f"[noise_reduce] DONE noise_reduced={noise_reduced}")
+    log_publish(f"[noise_reduce] END file={file_path_og}")
     return noise_reduced_chunk_list

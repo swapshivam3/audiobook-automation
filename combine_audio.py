@@ -32,6 +32,7 @@ def combine(file_list):
     # Convert to chunked path in order
     
     all_chunks = []
+    log_publish(f"Combining Files")
     for file_path in file_list:
         track_name = os.path.splitext(os.path.basename(file_path))[0]  # e.g., Track1
         pattern = os.path.join(LOCAL_NOISE_REDUCED_PATH, f"{track_name}_chunk*.wav")
@@ -42,6 +43,7 @@ def combine(file_list):
     combined_audio = AudioSegment.empty()
     
     for chunk_file in sorted_chunks:
+        log_publish(f"Combining {chunk_file}")
         audio = AudioSegment.from_wav(chunk_file)
         combined_audio += audio
     
@@ -68,16 +70,26 @@ def trim_long_silences(input_file, silence_threshold=-50, min_silence_len=1900, 
     
     audio = AudioSegment.from_file(input_file)
     log_publish(f"Starting silence trimming")
+    
+    audio_for_silence = audio.set_channels(1).set_frame_rate(16000)
+    silent_ranges = silence.detect_silence(
+        audio_for_silence,
+        min_silence_len=min_silence_len,
+        silence_thresh=silence_threshold,
+        seek_step=10
+    )
+    
+    # silent_ranges = ffmpeg_detect_silence(input_file, min_silence_len=min_silence_len, silence_thresh=silence_threshold)
 
     # Detect silent parts longer than `min_silence_len`
-    silent_ranges = silence.detect_silence(audio, min_silence_len=min_silence_len, silence_thresh=silence_threshold)
+    # silent_ranges = silence.detect_silence(audio, min_silence_len=min_silence_len, silence_thresh=silence_threshold)
     log_publish(f"Detected {len(silent_ranges)} long silences")
 
     # Process audio by trimming only the long silences
     trimmed_audio = AudioSegment.empty()
     last_end = 0
     total_trimmed = 0
-    fade_duration = 300  # ms for fade in/out
+    fade_duration = 200  # ms for fade in/out
     fade_per_cut = 100
     
     for start, end in silent_ranges:
